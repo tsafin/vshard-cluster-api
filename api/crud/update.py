@@ -1,31 +1,15 @@
-import tarantool
 
-# Query parameters
-query = {
-            "accounts": { # space
-                "acc_id": ":account_id", # [filter]
-            },
-            "set": { # set of new values
-                "acc_type": ":acc_type"
-            }
-        }
-params = {
-    "account_id": "99912345678",
-    "acc_type": "checking"
-}
-opts = {}
-
-# request
-result = tarantool.api.update(query, params, opts)
+result, err = vshard.update(
+    space="accounts"
+    condition="acc_id = ?",
+    params={"99912345678"},
+    mutations={("amount + 20000")},
+    opts = {"cas_cond": "amount = 30000"}) # [optimistic lock]
+# or
+result, err = vshard.query(
+    query="UPDATE accounts SET amount = amount + ? WHERE acc_id = '99912345678'",
+    params={"20000"},
+    opts = {"cas_cond": "amount = 30000"}) # [optimistic lock]
 """
-sample response
-{
-    "status": "200",
-    "result": {
-        "update": {
-            "success": 1,
-            "fail": 0
-        }
-    }
-}
+("99912345678", "saving", "50000")
 """

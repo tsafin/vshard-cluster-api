@@ -1,27 +1,15 @@
-import tarantool
 
-# Query parameters
-query = {
-            "accounts": { # space
-                "acc_id": ":account_id" # [filter]
-            }
-        }
-params = {
-            "account_id": "99912345678"
-        }
-opts = {}
-
-# request
-result = tarantool.api.delete(query, params, opts)
+result, err = vshard.delete(
+    space="accounts",
+    condition="acc_id = ?",
+    params={"99912345678"},
+    opts = {})
+# or
+query = vshard.query(
+    query="DELETE FROM accounts AS a WHERE a.acc_id = ?",
+    params={"99912345678"},
+    opts = {})
+result, err = query.execute()
 """
-sample response
-{
-    "status": "200",
-    "result": {
-        "delete": {
-            "success": 1,
-            "fail": 0
-        }
-    }
-}
+[]
 """

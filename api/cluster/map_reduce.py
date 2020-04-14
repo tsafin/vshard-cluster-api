@@ -1,35 +1,17 @@
-import tarantool
 
-# Query parameters
-query = {
-            "accounts": { # space
-                "acc_type": { # [filter]
-                    "ne": ":account_type" # not equals operation
-                }
-            },
-            "fields": { # [fields for selection]
-                "acc_id", "acc_type", "amount.value", "amount.currency"
-            }
-        }
-params = {
-           "account_type": "cash",
-           "map": "map_function", # registered before map_reduce call
-           "reduce": "reduce_function" # registered before map_reduce call
-       }
-opts = {
-            "options": {
-                "bucket_id": 228 # [bucket_id]
-            }
-        }
-
-# request
-result = tarantool.api.map_reduce(query, params, opts)
+#map_func - <hash code of registered function or plain text
+#reduce_func - <hash code of registered function or plain text
+result, err = vshard.map_reduce(
+    query="FROM accounts AS a WHERE a.acc_type <> :account_type",
+    params={"account_type": "cash"},
+    opts = {
+        "map": map_func,
+        "reduce": reduce_func,
+        # or
+        "map_hash": map_func_hash,
+        "reduce_hash": reduce_func_hash
+    })
 """
 sample response
-{
-    "status": "200",
-    "result": {
-        []
-    }
-}
+[]
 """
