@@ -233,5 +233,5 @@ update_q = vshard.query(
     space="accounts"
     conditions=[('acc_id', '=', '99912345678')],
     mutations=[('amount', '+', '20000')]) 
-result, err = vshard.tx(insert_q, update_q)
+result, err = vshard.tx_execute(insert_q, update_q)
 ```
