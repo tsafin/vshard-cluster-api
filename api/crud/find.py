@@ -1,7 +1,7 @@
 
 result, err = vshard.find(
     space="accounts",
-    condition="acc_type = :account_type and amount > 0",
+    conditions=[('acc_type', '=', ':account_type'), ('amount', '>', 0)],
     params={"account_type": "saving"},
     opts = {"limit": 2}) # [paging]
 """
