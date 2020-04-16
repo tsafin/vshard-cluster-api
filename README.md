@@ -58,8 +58,7 @@ result, err = vshard.batch_insert(
 result, err = vshard.update(
     space="accounts"
     conditions=[('acc_id', '=', '99912345678')],
-    mutations=[('amount', '+', '20000')],
-    opts = {"cas_cond": "amount = 30000"}) # [optimistic lock]
+    mutations=[('amount', '+', '20000')]) 
 ```
 
 `vshard.batch_update` - update array of tuples using batching
@@ -208,6 +207,12 @@ err = vshard.unsubscribe(channel_name)
 ```
 
 ## Transactions
+Deadlock-free transaction
 ```
-err = vshard.transaction
+# update with optimistic lock. field from cas_cond should be inc on succesfull update atomically.
+result, err = vshard.update(
+    space="accounts"
+    conditions=[('acc_id', '=', '99912345678')],
+    mutations=[('amount', '+', '20000')],
+    opts = {"cas_cond": ('version', '=', '1')}) # [optimistic lock condition]
 ```
