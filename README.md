@@ -6,8 +6,7 @@
 ```python
 result, err = vshard.select(
     space="accounts",
-    conditions=[('acc_type', '=', ':account_type'), ('amount', '>', 0)],
-    params={"account_type": "saving"},
+    conditions=[('acc_type', '=', 'saving'), ('amount', '>', 0)],
     opts = {"limit": 2}) # [paging]
 """
 sample response
@@ -49,9 +48,8 @@ result, err = vshard.batch.insert(
 ```python
 result, err = vshard.update(
     space="accounts"
-    conditions=[('acc_id', '=', '?')],
-    mutations=[('amount', '+', '?')],
-    params=[("99912345678", 20000)],
+    conditions=[('acc_id', '=', '99912345678')],
+    mutations=[('amount', '+', '20000')],
     opts = {"cas_cond": "amount = 30000"}) # [optimistic lock]
 ```
 
@@ -59,8 +57,8 @@ result, err = vshard.update(
 ```python
 result, err = vshard.batch.update(
     space="accounts",
+    set=[('amount', '+', '?')],
     conditions=[('acc_id', '=', '?')],
-    mutations=[('amount', '+', '?')],
     params=[("99912345678", 20000),("00012345678", 1000)],
     opts = {"batch_size": 20})
 ```
@@ -200,3 +198,6 @@ err = vshard.unsubscribe(channel_name)
 ```
 
 ## Transactions
+```
+err = vshard.transaction
+```
