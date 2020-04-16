@@ -8,6 +8,12 @@ result, err = vshard.select(
     space="accounts",
     conditions=[('acc_type', '=', 'saving'), ('amount', '>', 0)],
     opts = {"limit": 2}) # [paging]
+# or 
+result, err = vshard.query(
+    op="select",
+    space="accounts",
+    conditions=[('acc_type', '=', 'saving'), ('amount', '>', 0)],
+    opts = {"limit": 2}).execute() # [paging]
 """
 sample response
 [("00012345678", "saving", {"1000", "840"}),
@@ -208,11 +214,24 @@ err = vshard.unsubscribe(channel_name)
 
 ## Transactions
 Deadlock-free transaction
-```
+```python
 # update with optimistic lock. field from cas_cond should be inc on succesfull update atomically.
 result, err = vshard.update(
     space="accounts"
     conditions=[('acc_id', '=', '99912345678')],
     mutations=[('amount', '+', '20000')],
     opts = {"cas_cond": ('version', '=', '1')}) # [optimistic lock condition]
+```
+Execute different query statement in one transaction
+```python
+insert_q = vshard.query(
+    op="insert", 
+    query="accounts",
+    params=[("99912345678", "saving", "50000")])
+update_q = vshard.query(
+    op="update",
+    space="accounts"
+    conditions=[('acc_id', '=', '99912345678')],
+    mutations=[('amount', '+', '20000')]) 
+result, err = vshard.tx(insert_q, update_q)
 ```
