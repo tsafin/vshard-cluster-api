@@ -9,8 +9,7 @@ result, err = vshard.select(
     conditions=[('acc_type', '=', 'saving'), ('amount', '>', 0)],
     opts = {"limit": 2}) # [paging]
 # or 
-result, err = vshard.query(
-    op="select",
+result, err = vshard.select(
     space="accounts",
     conditions=[('acc_type', '=', 'saving'), ('amount', '>', 0)],
     opts = {"limit": 2}).execute() # [paging]
