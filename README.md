@@ -2,9 +2,9 @@
 
 ## CRUD operations
 ### Select
-`vshard.find` - search for records from a space, that fit conditions
+`vshard.select` - search for records from a space, that fit conditions
 ```python
-result, err = vshard.find(
+result, err = vshard.select(
     space="accounts",
     conditions=[('acc_type', '=', ':account_type'), ('amount', '>', 0)],
     params={"account_type": "saving"},
@@ -16,7 +16,7 @@ sample response
 """
 ```
 
-`vshard.get` - search for a record (like `find` with parameter `"limit" = 1`).
+`vshard.get` - search for a record (like `select` with parameter `"limit" = 1`).
 Returns only one record (if any).
 ```python
 result, err = vshard.get(
