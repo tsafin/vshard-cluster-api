@@ -1,4 +1,3 @@
-import tarantool
 
 def handler(data):
     print(data) #box.session.push and routing to a client

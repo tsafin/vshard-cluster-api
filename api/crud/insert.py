@@ -1,7 +1,7 @@
+
 result, err = vshard.insert(
-    query="accounts",
-    params={("99912345678", "saving", "50000")},
-    opts = {})
+    space="accounts",
+    params=[("99912345678", "saving", "50000")])
 #or
 stmt = vshard.query(
     query="INSERT ? INTO accounts",
