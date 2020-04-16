@@ -44,9 +44,9 @@ result, err = vshard.insert(
     params=[("99912345678", "saving", "50000")])
 ```
 
-`vshard.batch.insert` - insert array of tuples using batching
+`vshard.batch_insert` - insert array of tuples using batching
 ```python
-result, err = vshard.batch.insert(
+result, err = vshard.batch_insert(
     space="accounts",
     params=[("00012345678", "saving", "1000"), ("99912345678", "saving", "50000", "840")],
     opts = {"batch_size": 20})
@@ -62,9 +62,9 @@ result, err = vshard.update(
     opts = {"cas_cond": "amount = 30000"}) # [optimistic lock]
 ```
 
-`vshard.batch.update` - update array of tuples using batching
+`vshard.batch_update` - update array of tuples using batching
 ```python
-result, err = vshard.batch.update(
+result, err = vshard.batch_update(
     space="accounts",
     set=[('amount', '+', '?')],
     conditions=[('acc_id', '=', '?')],
