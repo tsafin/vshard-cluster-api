@@ -85,8 +85,9 @@ result, err = vshard.delete(
 ```python
 result, err = vshard.join(
     spaces=["accounts", "cards"],
-    conditions=[('accounts.acc_id', '=', 'cards.account_id'), \
+    on=[('accounts.acc_id', '=', 'cards.account_id'), \
         ('accounts.account_type', '=', 'saving')],
+    conditions=[('amount', '>', 0)]
     fields={'acc_id', 'acc_type', 'amount', \
             'cardnumber', 'expire_date', 'cards.status'})
 """
