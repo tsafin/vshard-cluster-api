@@ -13,6 +13,15 @@ sample response
 [("00012345678", "saving", {"1000", "840"}),
 ("99912345678", "saving", {"50000", "643"})]
 """
+# select data for the next page
+result, err = vshard.select(
+    space="accounts",
+    conditions=[('acc_type', '=', 'saving'), ('amount', '>', 0)],
+    opts = {"after": result[1], "limit": 2}) # [paging]
+"""
+sample response
+("4678213812", "checking", {"2000", "840"})
+"""
 ```
 
 `vshard.get` - search for a record (like `select` with parameter `"limit" = 1`).
