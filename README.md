@@ -223,14 +223,14 @@ result, err = vshard.update(
 ```
 Execute different query statement in one transaction
 ```python
-insert_q = vshard.query(
+insert_q = [{
     op="insert", 
     query="accounts",
-    params=[("99912345678", "saving", "50000")])
-update_q = vshard.query(
+    params=[("99912345678", "saving", "50000")] }]
+update_q = [{
     op="update",
     space="accounts"
     conditions=[('acc_id', '=', '99912345678')],
-    mutations=[('amount', '+', '20000')]) 
+    mutations=[('amount', '+', '20000')]) }]
 result, err = vshard.tx_execute(insert_q, update_q)
 ```
