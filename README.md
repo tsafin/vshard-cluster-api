@@ -93,7 +93,8 @@ result, err = vshard.join(
         ('accounts.account_type', '=', 'saving')],
     conditions=[('amount', '>', 0)]
     fields={'acc_id', 'acc_type', 'amount', \
-            'cardnumber', 'expire_date', 'cards.status'})
+            'cardnumber', 'expire_date', 'cards.status'},
+    opts = {"explain": false}) # return execution plan for the join query
 """
 [("00012345678", "saving", "1000", "1111222233334444", "1122", "active")]
 """
