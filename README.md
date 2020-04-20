@@ -8,11 +8,6 @@ result, err = vshard.select(
     space="accounts",
     conditions=[('acc_type', '=', 'saving'), ('amount', '>', 0)],
     opts = {"limit": 2}) # [paging]
-# or 
-result, err = vshard.select(
-    space="accounts",
-    conditions=[('acc_type', '=', 'saving'), ('amount', '>', 0)],
-    opts = {"limit": 2}).execute() # [paging]
 """
 sample response
 [("00012345678", "saving", {"1000", "840"}),
@@ -224,14 +219,25 @@ result, err = vshard.update(
 ```
 Execute different query statement in one transaction
 ```python
-insert_q = [{
-    op="insert", 
-    query="accounts",
-    params=[("99912345678", "saving", "50000")] }]
-update_q = [{
-    op="update",
-    space="accounts"
+queries = [
+    { op="insert", 
+        query="accounts",
+        params=[("99912345678", "saving", "50000")] },
+    { op="update",
+        space="accounts"
+        conditions=[('acc_id', '=', '99912345678')],
+        mutations=[('amount', '+', '20000')]) }]
+result, err = vshard.tx_execute(queries)
+```
+
+## Explain plan
+`explain` option - returns query execution plan.
+```python
+result, err = vshard.select(
+    space="accounts",
     conditions=[('acc_id', '=', '99912345678')],
-    mutations=[('amount', '+', '20000')]) }]
-result, err = vshard.tx_execute(insert_q, update_q)
+    opts = {"explain": true}) # explain plan of query execution
+"""
+# json-like tree with query plan
+"""
 ```
