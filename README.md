@@ -71,6 +71,15 @@ result, err = vshard.batch_update(
     opts = {"batch_size": 20})
 ```
 
+### Upsert
+`vshard.upsert` - insert new or update existing tuple in space
+```python
+result, err = vshard.insert(
+    query="accounts",
+    conditions=[('acc_id', '=', '99912345678')],
+    mutations=[('amount', '=', '20000'), ('acc_type', '=', 'new')]) 
+```
+
 ### Delete
 `vshard.delete` - delete tuples from space
 ```python
