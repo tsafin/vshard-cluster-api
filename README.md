@@ -44,12 +44,13 @@ result, err = vshard.insert(
     params=[("99912345678", "saving", "50000")])
 ```
 
-`vshard.batch_insert` - insert array of tuples using batching
+### Put
+`vshard.insert` - insert or replace tuple into space
 ```python
-result, err = vshard.batch_insert(
-    space="accounts",
-    params=[("00012345678", "saving", "1000"), ("99912345678", "saving", "50000", "840")],
-    opts = {"batch_size": 20})
+result, err = vshard.put(
+    query="accounts",
+    params=[("00012345678", "saving", "1000")])
+```
 ```
 
 ### Update
@@ -74,7 +75,7 @@ result, err = vshard.batch_update(
 ### Upsert
 `vshard.upsert` - insert new or update existing tuple in space
 ```python
-result, err = vshard.insert(
+result, err = vshard.upsert(
     query="accounts",
     conditions=[('acc_id', '=', '99912345678')],
     mutations=[('amount', '=', '20000'), ('acc_type', '=', 'new')]) 
@@ -165,27 +166,22 @@ err = vshard.queue_create(
 
 # push message to the queue
 # optional ttl - time to live for the message.
+# optional timeout - custom timeout for put operation
 # it should not be read once ttl's passed
-err = vshard.queue_put(queue_name, ("some", "data"), ttl=2000)
-
-# blocking push message to the queue with timeout
-err = vshard.queue_offer(queue_name, ("some", "data"), timeout=5000)
+data, err = vshard.queue_put(queue_name, ("some", "data"), ttl=2000, timeout=5000)
 
 # read and remove message from the queue
 # if queue is empty, return empty null
-data, err = vshard.queue_take(queue_name)
-
-# read and remove message from the queue,
-# operation blocks until message is received or read_timeout
-data, err = vshard.queue_poll(queue_name, timeout=5000)
+# optional timeout - custom timeout for take operation
+data, err = vshard.queue_take(queue_name, timeout=5000)
 
 # peek - read and do not remove message.
 # option to lock message for reads by other clients
 # if queue is empty return null
-data, err = vshard.queue_peek(queue_name, lock=true)
+data, err = vshard.queue_peek(queue_name, timeout=5000, lock=true)
 
 # remove - remove locked message
-data, err = vshard.queue_remove(queue_name, data)
+data, err = vshard.queue_remove(queue_name, data, timeout=5000)
 
 # delete - delete queue
 err = vshard.queue_delete(queue_name)
@@ -196,7 +192,7 @@ err = vshard.queue_delete(queue_name)
 ```python
 # create new channel
 channel_name = "user messages"
-err = vshard.channel.create(
+err = vshard.channel_create(
     channel=channel_name
     opts = {
         "read_timeout": "10000", # default parameters
@@ -205,7 +201,7 @@ err = vshard.channel.create(
         "ttl": "100000"})
 
 # publish message to an existing channel
-vshard.channel.publish(channel_name, "some message")
+vshard.channel_publish(channel_name, "some message")
 
 def handler(messages):
     for m in messages: print(m)
