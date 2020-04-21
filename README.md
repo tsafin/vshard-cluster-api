@@ -175,13 +175,15 @@ data, err = vshard.queue_put(queue_name, ("some", "data"), ttl=2000, timeout=500
 # optional timeout - custom timeout for take operation
 data, err = vshard.queue_take(queue_name, timeout=5000)
 
-# peek - read and do not remove message.
-# option to lock message for reads by other clients
-# if queue is empty return null
-data, err = vshard.queue_peek(queue_name, timeout=5000, lock=true)
+# peek - read and do not remove message. if queue is empty return null
+# optional timeout - custom timeout for peek operation
+# lock - option to lock message for reads by other clients
+# lock_timeout - timeout after which lock will be invalidated
+# returns tuples (message, lock_key). lock_key should be used to remove message from queue.
+data, err = vshard.queue_peek(queue_name, timeout=5000, lock=true, lock_timeout=10000)
 
 # remove - remove locked message
-data, err = vshard.queue_remove(queue_name, data, timeout=5000)
+data, err = vshard.queue_remove(queue_name, data.lock_key, timeout=5000)
 
 # delete - delete queue
 err = vshard.queue_delete(queue_name)
@@ -204,9 +206,15 @@ err = vshard.channel_create(
 vshard.channel_publish(channel_name, "some message")
 
 def handler(messages):
+    # each message is a tuple (message_body, message_offset)
     for m in messages: print(m)
+
 # subscribe to a channel, specify handler for incoming messages
-err = vshard.subscribe(channel_name, handler)
+# filter - optional attribute to specify subscriber's message filter
+# offset - message offset from which subscriber wants to consume 
+err = vshard.subscribe(channel_name, handler, 
+    opts = {"offset": message_offset,
+            "filter": ('acc_type', '=', 'saving')})
 
 # unsubscribe from a channel
 err = vshard.unsubscribe(channel_name)
