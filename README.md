@@ -69,7 +69,7 @@ result, err = vshard.put_all(
 ```python
 result, err = vshard.update(
     space="accounts"
-    set=[('+', 'amount', '20000')]) 
+    set=[('+', 'amount', '20000')]),
     conditions=[('=', 'acc_id', '99912345678')],
 ```
 
