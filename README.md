@@ -165,22 +165,25 @@ err = vshard.queue_create(
         "ttl": "100000"})
 
 # push message to the queue
-# optional ttl - time to live for the message.
-# optional timeout - custom timeout for put operation
+# ttl - time to live for the message.
+# timeout - custom timeout for put operation
+# partition - put message into specified queue partition
 # it should not be read once ttl's passed
-data, err = vshard.queue_put(queue_name, ("some", "data"), ttl=2000, timeout=5000)
+data, err = vshard.queue_put(queue_name, message=("some", "data"), partition=partition_id, ttl=2000, timeout=5000)
 
 # read and remove message from the queue
 # if queue is empty, return empty null
-# optional timeout - custom timeout for take operation
-data, err = vshard.queue_take(queue_name, timeout=5000)
+# timeout - custom timeout for take operation
+# partition - get message from a specified queue partition
+data, err = vshard.queue_take(queue_name, partition=partition_id, timeout=5000)
 
 # peek - read and do not remove message. if queue is empty return null
-# optional timeout - custom timeout for peek operation
+# partition - peek message from a specified queue partition
+# timeout - custom timeout for peek operation
 # lock - option to lock message for reads by other clients
 # lock_timeout - timeout after which lock will be invalidated
 # returns tuples (message, lock_key). lock_key should be used to remove message from queue.
-data, err = vshard.queue_peek(queue_name, timeout=5000, lock=true, lock_timeout=10000)
+data, err = vshard.queue_peek(queue_name, partition=partition_id, timeout=5000, lock=true, lock_timeout=10000)
 
 # remove - remove locked message
 data, err = vshard.queue_remove(queue_name, data.lock_key, timeout=5000)
