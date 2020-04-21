@@ -44,12 +44,28 @@ result, err = vshard.insert(
     params=[("99912345678", "saving", "50000")])
 ```
 
+`vshard.batch_insert` - insert array of tuples using batching
+```python
+result, err = vshard.batch_insert(
+    space="accounts",
+    params=[("99912345678", "saving", "50000"),("99912345678", "saving", {"50000", "643"})],
+    opts = {"batch_size": 20})
+```
+
 ### Put
 `vshard.insert` - insert or replace tuple into space
 ```python
 result, err = vshard.put(
     query="accounts",
     params=[("00012345678", "saving", "1000")])
+```
+
+`vshard.put_all` - put array of tuples using batching
+```python
+result, err = vshard.put_all(
+    space="accounts",
+    params=[("99912345678", "saving", "50000"),("99912345678", "saving", {"50000", "643"})],
+    opts = {"batch_size": 20})
 ```
 
 ### Update
@@ -78,6 +94,16 @@ result, err = vshard.upsert(
     query="accounts",
     conditions=[('=', 'acc_id', '99912345678')],
     mutations=[('=', 'amount', '20000'), ('=', 'acc_type', 'new')]) 
+```
+
+`vshard.batch_upsert` - upsert array of tuples using batching
+```python
+result, err = vshard.batch_upsert(
+    space="accounts",
+    set=[('+', 'amount', '?')],
+    conditions=[('=', 'acc_id', '?')],
+    params=[("99912345678", 20000),("00012345678", 1000)],
+    opts = {"batch_size": 20})
 ```
 
 ### Delete
