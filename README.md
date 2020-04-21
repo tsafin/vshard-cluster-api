@@ -6,7 +6,7 @@
 ```python
 result, err = vshard.select(
     space="accounts",
-    conditions=[('acc_type', '=', 'saving'), ('amount', '>', 0)],
+    conditions=[('=', 'acc_type', 'saving'), ('>', 'amount', 0)],
     opts = {"limit": 2}) # [paging]
 """
 sample response
@@ -16,7 +16,7 @@ sample response
 # select data for the next page
 result, err = vshard.select(
     space="accounts",
-    conditions=[('acc_type', '=', 'saving'), ('amount', '>', 0)],
+    conditions=[('=', 'acc_type', 'saving'), ('amount', '>', 0)],
     opts = {"after": result[1], "limit": 2}) # [paging]
 """
 sample response
@@ -29,7 +29,7 @@ Returns only one record (if any).
 ```python
 result, err = vshard.get(
     space="accounts",
-    conditions=[('acc_id', '=', '99912345678')])
+    conditions=[('=', 'acc_id', '99912345678')])
 """
 sample response
 ("99912345678", "saving", {"1000", "840"})
@@ -51,23 +51,22 @@ result, err = vshard.put(
     query="accounts",
     params=[("00012345678", "saving", "1000")])
 ```
-```
 
 ### Update
 `vshard.update` - update tuple in space
 ```python
 result, err = vshard.update(
     space="accounts"
-    conditions=[('acc_id', '=', '99912345678')],
-    mutations=[('amount', '+', '20000')]) 
+    conditions=[('=', 'acc_id', '99912345678')],
+    mutations=[('+', 'amount', '20000')]) 
 ```
 
 `vshard.batch_update` - update array of tuples using batching
 ```python
 result, err = vshard.batch_update(
     space="accounts",
-    set=[('amount', '+', '?')],
-    conditions=[('acc_id', '=', '?')],
+    set=[('+', 'amount', '?')],
+    conditions=[('=', 'acc_id', '?')],
     params=[("99912345678", 20000),("00012345678", 1000)],
     opts = {"batch_size": 20})
 ```
@@ -77,8 +76,8 @@ result, err = vshard.batch_update(
 ```python
 result, err = vshard.upsert(
     query="accounts",
-    conditions=[('acc_id', '=', '99912345678')],
-    mutations=[('amount', '=', '20000'), ('acc_type', '=', 'new')]) 
+    conditions=[('=', 'acc_id', '99912345678')],
+    mutations=[('=', 'amount', '20000'), ('=', 'acc_type', 'new')]) 
 ```
 
 ### Delete
@@ -86,7 +85,7 @@ result, err = vshard.upsert(
 ```python
 result, err = vshard.delete(
     space="accounts",
-    conditions=[('acc_id', '=', '99912345678')])
+    conditions=[('=', 'acc_type', '99912345678')])
 ```
 
 ## Joins
@@ -94,9 +93,9 @@ result, err = vshard.delete(
 ```python
 result, err = vshard.join(
     spaces=["accounts", "cards"],
-    on=[('accounts.acc_id', '=', 'cards.account_id'), \
-        ('accounts.account_type', '=', 'saving')],
-    conditions=[('amount', '>', 0)]
+    on=[('=', 'accounts.acc_id', 'cards.account_id'), \
+        ('=', 'accounts.account_type', 'saving')],
+    conditions=[('>', 'amount', 0)]
     fields={'acc_id', 'acc_type', 'amount', \
             'cardnumber', 'expire_date', 'cards.status'},
     opts = {"explain": false}) # return execution plan for the join query
@@ -126,7 +125,7 @@ result, err = vshard.call(func_hash, params)
 result, err = vshard.call(
     "local user = ...\n return 'Hello ' .. user", params)
 # call by sharding key
-result, err = vshard.call("accounts", ('acc_id', '=', '99912345678'), func_hash, params)
+result, err = vshard.call("accounts", ('=', 'acc_id', '99912345678'), func_hash, params)
 ```
 
 ## Map/Reduce
@@ -136,7 +135,7 @@ result, err = vshard.call("accounts", ('acc_id', '=', '99912345678'), func_hash,
 # reduce_func - <hash code of registered function or plain text
 result, err = vshard.map_reduce(
     space="accounts",
-    conditions=[('acc_type', '=', 'cash')],
+    conditions=[('=', 'acc_type', 'cash')],
     opts = {
         "map": map_func,
         "reduce": reduce_func,
@@ -149,9 +148,9 @@ result, err = vshard.map_reduce(
 """
 ```
 
-## Queues
+## Messaging
 ### FIFO queue
-`vshard.queue` - fifo queue with blocking and non-blocking operations.
+`vshard.queue` - queue with blocking and non-blocking operations. fifo is guaranteed on partition level.
 ```python
 # create new queue if not exists
 queue_name = "system messages"
@@ -217,23 +216,24 @@ def handler(messages):
 # offset - message offset from which subscriber wants to consume 
 err = vshard.subscribe(channel_name, handler, 
     opts = {"offset": message_offset,
-            "filter": ('acc_type', '=', 'saving')})
+            "filter": ('=', 'acc_type', 'saving')})
 
 # unsubscribe from a channel
 err = vshard.unsubscribe(channel_name)
 ```
 
 ## Transactions
-Deadlock-free transaction
+### Deadlock-free transaction
 ```python
 # update with optimistic lock. field from cas_cond should be inc on succesfull update atomically.
 result, err = vshard.update(
     space="accounts"
-    conditions=[('acc_id', '=', '99912345678')],
-    mutations=[('amount', '+', '20000')],
-    opts = {"cas_cond": ('version', '=', '1')}) # [optimistic lock condition]
+    conditions=[('=', 'acc_id', '99912345678')],
+    mutations=[('+', 'amount', '20000')],
+    opts = {"cas_cond": ('=', 'version', '1')}) # [optimistic lock condition]
 ```
-Execute different query statement in one transaction
+
+### Distributed transaction
 ```python
 queries = [
     { op="insert", 
@@ -241,9 +241,12 @@ queries = [
         params=[("99912345678", "saving", "50000")] },
     { op="update",
         space="accounts"
-        conditions=[('acc_id', '=', '99912345678')],
-        mutations=[('amount', '+', '20000')]) }]
-result, err = vshard.tx_execute(queries)
+        conditions=[('=', 'acc_id', '99912345678')],
+        mutations=[('+', 'amount', '20000')]) }]
+# prepare transaction for execution on dedicated storages
+tx_id, err = vshard.tx_prepare(queries)
+# commit transaction 
+result, err = vshard.tx_commit(tx_id)
 ```
 
 ## Explain plan
@@ -251,7 +254,7 @@ result, err = vshard.tx_execute(queries)
 ```python
 result, err = vshard.select(
     space="accounts",
-    conditions=[('acc_id', '=', '99912345678')],
+    conditions=[('=', 'acc_id', '99912345678')],
     opts = {"explain": true}) # explain plan of query execution
 """
 # json-like tree with query plan
