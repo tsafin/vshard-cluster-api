@@ -365,34 +365,35 @@ result, err = vshard.call("86c0f50124ea8abaf6624794b74c5654587a8f72", {"world"},
 
 Формат запроса:
 ```lua
-result, err = vshard.call(func, params, ) 
+result, err = vshard.call(space, conditions, opts) 
 ```
 
-* `func` - hash код зарегистрированной функции (см. [vshard.register](#register-function)) или lua скрипт для выполнения.
-* `params` - массив значений аргументов функции
-* `space` - спейс для определения ключа шардирования
-* `key` - ключ кортежа. Если задан вместе со `space`, функция будет выполнена только на узле, где хранится кортеж с данным ключом.
-* `params` - массив значений аргументов функции
-* `result` - hash код зарегистрированной функции. Должен быть использован для вызова функции.
+* `space` - имя спейса
+* `conditions` - массив условий поиска кортежей 
+* `params` - массив значений параметров для условий поиска
+* `opts` - дополнительные опции запроса:
+  * `map` - тело функции map.  
+  Имеет более высокий приоритет над `map_hash` (т.е. если указаны обе опции, выполняться будет функция, 
+  заданная в `map`)
+  * `reduce` - тело функции reduce. 
+  Имеет более высокий приоритет над `reduce_hash` (т.е. если указаны обе опции, выполняться будет функция, 
+  заданная в `reduce`)
+  * `map_hash` - hash код зарегистрированной функции map. 
+  * `reduce_hash` - hash код зарегистрированной функции reduce. 
+* `result` - массив найденных кортежей
 * `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
   
 Пример:
 ```lua
-# map_func - <hash code of registered function or plain text
-# reduce_func - <hash code of registered function or plain text
-result, err = vshard.map_reduce(
-    space="accounts",
-    conditions=[('=', 'acc_type', 'cash')],
-    opts = {
-        "map": map_func,
-        "reduce": reduce_func,
-        # or
-        "map_hash": map_func_hash,
-        "reduce_hash": reduce_func_hash
+-- map_func_hash - hash code of registered function 
+-- reduce_func_hash - hash code of registered function 
+result, err = vshard.map_reduce("accounts",
+    {{'=', 'acc_type', '?'}}, -- conditions
+    {'cash'}, -- params
+    { -- opts
+        map_hash = map_func_hash,
+        reduce_hash = reduce_func_hash
     })
-"""
-[]
-"""
 ```
 
 ## Messaging
