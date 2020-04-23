@@ -88,15 +88,15 @@ result, err = vshard.batch_insert(space, tuples, opts)
 * `space` - имя спейса
 * `tuples` - массив кортежей для сохранения
 * `opts` - дополнительные опции запроса:
-  * `batch_size` - число кортежей в одном батче
+  * `batch_size` - число кортежей в одном батче (по-умолчанию 0, т.е. обработка всех кортежей за раз)
+  * `skip_result` - boolean флаг, указывающий о необходимости возврата данных в `result`
 * `result` - массив кортежей, сохраненных в спейсе в последнем выполненном батче
 * `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
   
 Пример:
 ```lua
 result, err = vshard.batch_insert("accounts",
-    {{"99912345678", "saving", "50000"},{"99912345678", "saving", {"50000", "643"}}},
-    {batch_size = 20})
+    {{"99912345678", "saving", "50000"},{"99912345678", "saving", {"50000", "643"}}})
 ```
 ---
 ### Put
@@ -130,15 +130,15 @@ result, err = vshard.batch_put(space, tuples, opts)
 * `space` - имя спейса
 * `tuples` - массив кортежей для сохранения или замены
 * `opts` - дополнительные опции запроса:
-  * `batch_size` - число кортежей в одном батче
+  * `batch_size` - число кортежей в одном батче (по-умолчанию 0, т.е. обработка всех кортежей за раз)
+  * `skip_result` - boolean флаг, указывающий о необходимости возврата данных в `result`
 * `result` - массив кортежей, сохраненных/обновленных в спейсе
 * `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
   
 Пример:
 ```lua
 result, err = vshard.batch_put(accounts,
-    {{"99912345678", "saving", "50000"},{"99912345678", "saving", {"50000", "643"}}},
-    {batch_size = 20})
+    {{"99912345678", "saving", "50000"},{"99912345678", "saving", {"50000", "643"}}})
 ```
 ---
 ### Update
@@ -175,7 +175,8 @@ result, err = vshard.batch_update(space, conditions, operations, params, opts)
 * `operations` - массив операций изменения данных в кортеже
 * `params` - массив значений параметров для операций и условий
 * `opts` - дополнительные опции запроса:
-  * `batch_size` - число кортежей в одном батче
+  * `batch_size` - число кортежей в одном батче (по-умолчанию 0, т.е. обработка всех кортежей за раз)
+  * `skip_result` - boolean флаг, указывающий о необходимости возврата данных в `result`
 * `result` - массив кортежей, обновленных в последнем выполненном батче
 * `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
   
@@ -184,8 +185,7 @@ result, err = vshard.batch_update(space, conditions, operations, params, opts)
 result, err = vshard.batch_update("accounts",
     {{'=', 'acc_id', ':account_id'}}, -- conditions
     {{'+', 'amount', ':add_amount'}}, -- operations
-    {{account_id = "99912345678", add_amount = 20000},{account_id = "00012345678", add_amount = 1000}}, -- params
-    {batch_size = 20}) -- opts
+    {{account_id = "99912345678", add_amount = 20000},{account_id = "00012345678", add_amount = 1000}}) -- params
 ```
 ---
 ### Upsert
@@ -221,7 +221,8 @@ result, err = vshard.batch_upsert(space, tuples, operations, params, opts)
 * `operations` - массив массивов операций изменения в кортежах. К кортежу по индексу n (tuples[n]) будут применены операции operations[n].
 * `params` - массив значений параметров для операций и условий
 * `opts` - дополнительные опции запроса:
-  * `batch_size` - число кортежей в одном батче
+  * `batch_size` - число кортежей в одном батче (по-умолчанию 0, т.е. обработка всех кортежей за раз)
+  * `skip_result` - boolean флаг, указывающий о необходимости возврата данных в `result`
 * `result` - массив кортежей, обновленных в последнем выполненном батче
 * `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
   
@@ -229,8 +230,7 @@ result, err = vshard.batch_upsert(space, tuples, operations, params, opts)
 ```lua
 result, err = vshard.batch_upsert("accounts",
     {{"99912345678", "saving", "50000"},{"00012345678", "saving", {"50000", "643"}}}, -- tuples
-    {{{'+', 'amount', '5000'}}, {{'-', 'amount', '5000'}}}, -- params
-    {batch_size = 20}) -- opts
+    {{{'+', 'amount', '5000'}}, {{'-', 'amount', '5000'}}}) -- params
 ```
 ---
 ### Delete
@@ -265,17 +265,15 @@ result, err = vshard.batch_delete(space, conditions, params, opts)
 * `conditions` - массив условий поиска кортежей для удаления
 * `params` - массив значений параметров для условий поиска
 * `opts` - дополнительные опции запроса:
-  * `batch_size` - число кортежей в одном батче
+  * `batch_size` - число кортежей в одном батче (по-умолчанию 0, т.е. обработка всех кортежей за раз)
+  * `skip_result` - boolean флаг, указывающий о необходимости возврата данных в `result`
 * `result` - массив кортежей, удаленных в последнем выполненном батче
 * `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
   
 Пример:
 ```lua
 result, err = vshard.batch_delete("accounts", 
-    {{'=', 'acc_type', 'saving'}}, -- conditions
-    {}, -- params
-    {batch_size = 20} -- opts
-    )
+    {{'=', 'acc_type', 'saving'}}) -- conditions
 --[[ sample response
 {{"00012345678", "saving", {"1000", "840"}},
 {"99912345678", "saving", {"50000", "643"}}}
