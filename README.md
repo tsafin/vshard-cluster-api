@@ -117,11 +117,11 @@ result, err = vshard.put("accounts", {"00012345678", "saving", "1000"})
 ]]--
 ```
 ---
-`vshard.put_all` - вставка новых и обновление существующих кортежей в спейсе.
+`vshard.batch_put` - вставка новых и обновление существующих кортежей в спейсе.
 
 Формат запроса:
 ```lua
-result, err = vshard.put_all(space, tuples, opts) 
+result, err = vshard.batch_put(space, tuples, opts) 
 ```
 
 * `space` - имя спейса
@@ -133,7 +133,7 @@ result, err = vshard.put_all(space, tuples, opts)
   
 Пример:
 ```lua
-result, err = vshard.put_all(accounts,
+result, err = vshard.batch_put(accounts,
     {{"99912345678", "saving", "50000"},{"99912345678", "saving", {"50000", "643"}}},
     {batch_size = 20})
 ```
@@ -372,7 +372,7 @@ result, err = vshard.call(space, conditions, opts)
 * `conditions` - массив условий поиска кортежей 
 * `params` - массив значений параметров для условий поиска
 * `opts` - дополнительные опции запроса:
-  * `map` - тело функции map.  
+  * `map` - тело функции map. 
   Имеет более высокий приоритет над `map_hash` (т.е. если указаны обе опции, выполняться будет функция, 
   заданная в `map`)
   * `reduce` - тело функции reduce. 
@@ -395,10 +395,26 @@ result, err = vshard.map_reduce("accounts",
         reduce_hash = reduce_func_hash
     })
 ```
-
+---
 ## Messaging
 ### FIFO queue
-`vshard.queue` - queue with blocking and non-blocking operations. fifo is guaranteed on partition level.
+`vshard.queue_create` - Создание распределенной очереди с гарантией fifo на уровне партиций.
+
+Формат запроса:
+```lua
+result, err = vshard.queue_create(name, opts) 
+```
+
+* `name` - имя очереди
+* `opts` - дополнительные опции запроса:
+  * `read_timeout` - время ожидания чтения из очереди (мс).
+  * `write_timeout` - время ожидания записи в очередь (мс).
+  * `lock_timeout` - время . 
+  * `reduce_hash` - hash код зарегистрированной функции reduce. 
+* `result` - массив найденных кортежей
+* `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
+  
+Пример:
 ```lua
 # create new queue if not exists
 queue_name = "system messages"
