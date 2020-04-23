@@ -301,7 +301,7 @@ result, err = vshard.join(spaces, on, conditions, fields, params, opts)
 ```lua
 result, err = vshard.join({"accounts", "cards"}, -- spaces
     {{'accounts.acc_id', 'cards.account_id'}}, -- on
-    {{'>', 'amount', 0}, {'=', 'accounts.account_type', 'saving'}}, -- consitions
+    {{'>', 'accounts.amount', 0}, {'=', 'accounts.account_type', 'saving'}}, -- consitions
     {'accounts.acc_id', 'accounts.acc_type', 'accounts.amount', -- fields
      'cards.cardnumber', 'cards.expire_date', 'cards.status'}) 
 --[[ sample response 
@@ -357,7 +357,7 @@ result, err = vshard.call("86c0f50124ea8abaf6624794b74c5654587a8f72", {"world"},
     "accounts", "99912345678")
 ```
 ---
-# TDB
+# TBD
 Далее перечислены методы API, которые еще находятся на стадии обсуждения.
 
 ## Map/Reduce
