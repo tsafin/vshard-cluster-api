@@ -340,7 +340,7 @@ result, err = vshard.register("local user = ...\n return 'Hello ' .. user")
 result, err = vshard.call(func, params, space, key) 
 ```
 
-* `func` - hash код зарегистрированной функции (см. [vshard.register](#register-function)) или lua скрипт для выполнения.
+* `func` - hash код зарегистрированной функции (см. [vshard.register](#register-function)).
 * `params` - массив значений аргументов функции
 * `space` - спейс для определения ключа шардирования
 * `key` - ключ кортежа. Если задан вместе со `space`, функция будет выполнена только на узле, где хранится кортеж с данным ключом.
@@ -352,10 +352,33 @@ result, err = vshard.call(func, params, space, key)
 ```lua
 -- call on all nodes registered function
 result, err = vshard.call("86c0f50124ea8abaf6624794b74c5654587a8f72", {"world"})
--- call on all nodes plain script
-result, err = vshard.call("local user = ...\n return 'Hello ' .. user", {"world"})
 -- call by sharding key
 result, err = vshard.call("86c0f50124ea8abaf6624794b74c5654587a8f72", {"world"}, 
+    "accounts", "99912345678")
+```
+---
+### Eval function
+`vshard.eval` - выполнении lua фунции в кластере. 
+
+Формат запроса:
+```lua
+result, err = vshard.eval(func, params, space, key) 
+```
+
+* `func` - lua скрипт для выполнения.
+* `params` - массив значений аргументов функции
+* `space` - спейс для определения ключа шардирования
+* `key` - ключ кортежа. Если задан вместе со `space`, функция будет выполнена только на узле, где хранится кортеж с данным ключом.
+* `params` - массив значений аргументов функции
+* `result` - hash код зарегистрированной функции. Должен быть использован для вызова функции.
+* `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
+  
+Пример:
+```lua
+-- call on all nodes plain script
+result, err = vshard.eval("local user = ...\n return 'Hello ' .. user", {"world"})
+-- call by sharding key
+result, err = vshard.eval("local user = ...\n return 'Hello ' .. user", {"world"}, 
     "accounts", "99912345678")
 ```
 ---
@@ -401,7 +424,7 @@ result, err = vshard.map_reduce("accounts",
 ---
 ## Messaging
 ### FIFO queue
-`vshard.queue_create` - Создание распределенной очереди с гарантией fifo на уровне партиций.
+`vshard.queue_create` - Создание распределенной очереди с гарантией fifo на уровне партиций. 
 
 Формат запроса:
 ```lua
@@ -410,47 +433,92 @@ result, err = vshard.queue_create(name, opts)
 
 * `name` - имя очереди
 * `opts` - дополнительные опции запроса:
-  * `read_timeout` - время ожидания чтения из очереди (мс).
-  * `write_timeout` - время ожидания записи в очередь (мс).
-  * `lock_timeout` - время . 
-  * `reduce_hash` - hash код зарегистрированной функции reduce. 
-* `result` - массив найденных кортежей
+  * `read_timeout` - время ожидания чтения из очереди (по-умолчанию 10000 мс).
+  * `write_timeout` - время ожидания записи в очередь (по-умолчанию 10000 мс).
+  * `lock_timeout` - время блокировки записи при вызове `queue_peek` с параметром `lock=true` (по-умолчанию 10000 мс). 
+  * `size` - максимальный размер очереди (по-умолчанию не ограничен). 
+  * `ttl` - время жизни сообещния в очереди (в мс, по-умолчанию не ограничено). 
+  Если задано, то по истечению времени сообщение не может быть прочитано из очереди и будет удалено.
+* `result` - nil
 * `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
   
 Пример:
 ```lua
-# create new queue if not exists
-queue_name = "system messages"
-err = vshard.queue_create(
-    name=queue_name
-    opts = {
-        "read_timeout": "10000", # default parameters
-        "write_timeout": "10000",
-        "lock_timeout": "10000",
-        "size": "100000",
-        "ttl": "100000"})
+-- create new queue if not exists
+result, err = vshard.queue_create("system messages", { size = 100000, ttl = 100000})
+```
+---
+`vshard.queue_put` - запись сообщения в очередь. 
 
-# push message to the queue
-# ttl - time to live for the message.
-# timeout - custom timeout for put operation
-# partition - put message into specified queue partition
-# it should not be read once ttl's passed
-data, err = vshard.queue_put(queue_name, message=("some", "data"), partition=partition_id, ttl=2000, timeout=5000)
+Формат запроса:
+```lua
+result, err = vshard.queue_put(name, message, partition, opts) 
+```
 
-# read and remove message from the queue
-# if queue is empty, return empty null
-# timeout - custom timeout for take operation
-# partition - get message from a specified queue partition
-data, err = vshard.queue_take(queue_name, partition=partition_id, timeout=5000)
+* `name` - имя очереди
+* `message` - кортеж с данными для записи в очередь
+* `partition` - идентификатор партиции, по которому определяется узел для хранения сообщения в очереди
+* `opts` - дополнительные опции запроса:
+  * `timeout` - время ожидания записи в очередь (по-умолчанию значение берется из опции `write_timeout` очереди).
+  * `ttl` - время жизни сообещния в очереди. 
+  Если задано, то по истечению времени сообщение не может быть прочитано из очереди и будет удалено.
+* `result` - nil
+* `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
+  
+Пример:
+```lua
+data, err = vshard.queue_put("system messages", 
+    {"some", "data"}, -- message
+    1) -- идентификатор партиции
+```
+---
+`vshard.queue_take` - чтение и удаление сообщения из очереди. 
 
-# peek - read and do not remove message. if queue is empty return null
-# partition - peek message from a specified queue partition
-# timeout - custom timeout for peek operation
-# lock - option to lock message for reads by other clients
-# lock_timeout - timeout after which lock will be invalidated
-# returns tuples (message, lock_key). lock_key should be used to remove message from queue.
-data, err = vshard.queue_peek(queue_name, partition=partition_id, timeout=5000, lock=true, lock_timeout=10000)
+Формат запроса:
+```lua
+result, err = vshard.queue_take(name, partition, opts) 
+```
 
+* `name` - имя очереди
+* `partition` - идентификатор партиции, по которому определяется узел для хранения сообщения в очереди
+* `opts` - дополнительные опции запроса:
+  * `timeout` - время ожидания записи в очередь (по-умолчанию значение берется из опции `read_timeout` очереди).
+  Если задано, то по истечению времени сообщение не может быть прочитано из очереди и будет удалено.
+* `result` - кортеж с данными
+* `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
+  
+Пример:
+```lua
+data, err = vshard.queue_take("system messages", 1)
+```
+---
+`vshard.queue_peek` - чтение сообщения из очереди. Само сообщение при этом из очереди не удаляется. 
+
+Формат запроса:
+```lua
+result, err = vshard.queue_peek(name, partition, opts) 
+```
+
+* `name` - имя очереди
+* `partition` - идентификатор партиции, по которому определяется узел для хранения сообщения в очереди
+* `opts` - дополнительные опции запроса:
+  * `timeout` - время ожидания сообщения в очереди (по-умолчанию значение берется из опции `read_timeout` очереди).
+  * `lock` - boolean флаг, задает необходимость блокировки сообщения на чтение другими клиентами.
+  * `lock_timeout` - время блокировки сообщения в очереди (по-умолчанию значение берется из опции `lock_timeout` очереди). 
+  По истечению `lock_timeout` блокировка с сообщения будет удалена.
+  Если задано, то по истечению времени сообщение не может быть прочитано из очереди и будет удалено.
+* `result` - кортеж в формате `{lock_key, message}`, где `lock_key` является ключом блокировки и 
+должен быть использован для удаления сообщения из очереди за период `lock_timeout`. Если `opts.lock == false`, 
+то `lock_key == nil`
+* `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
+  
+Пример:
+```lua
+data, err = vshard.queue_peek("system messages", 1, { lock = true })
+```
+---
+
+```
 # remove - remove locked message
 data, err = vshard.queue_remove(queue_name, data.lock_key, timeout=5000)
 
