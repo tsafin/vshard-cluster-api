@@ -31,7 +31,7 @@ result, err = vshard.select("accounts", {{'=', 'acc_type', 'saving'}, {'>', 'amo
 {{"4678213812", "checking", {"2000", "840"}}}
 ]]--
 ```
-
+---
 `vshard.get` - поиск кортежа по ключу.
 
 Формат запроса:
@@ -72,7 +72,7 @@ result, err = vshard.insert("accounts", {"99912345678", "saving", "50000"})
 {"99912345678", "saving", "50000"}
 ]]--
 ```
-
+---
 `vshard.batch_insert` - пакетное сохранение массива кортежей в спейсе.
 
 Формат запроса:
@@ -93,9 +93,10 @@ result, err = vshard.batch_insert("accounts",
     {{"99912345678", "saving", "50000"},{"99912345678", "saving", {"50000", "643"}}},
     {batch_size = 20})
 ```
-
+---
 ### Put
 `vshard.put` - вставка или замена существующего кортежа в спейсе.
+
 Формат запроса:
 ```lua
 result, err = vshard.put(space, tuples) 
@@ -113,7 +114,7 @@ result, err = vshard.put("accounts", {"00012345678", "saving", "1000"})
 {"00012345678", "saving", "1000"}
 ]]--
 ```
-
+---
 `vshard.put_all` - вставка новых и обновление существующих кортежей в спейсе.
 
 Формат запроса:
@@ -156,7 +157,7 @@ result, err = vshard.update("accounts", "99912345678", {{'+', 'amount', '20000'}
 {"99912345678", "saving", "70000"}
 ]]--
 ```
-
+---
 `vshard.batch_update` - пакетное обновление кортежей в спейсе.
 
 Формат запроса:
@@ -202,7 +203,7 @@ result, err = vshard.upsert("accounts",
     {"99912345678", "saving", "50000"},
     {{'=', 'amount', '20000'}, {'=', 'acc_type', 'new'}})
 ```
-
+---
 `vshard.batch_upsert` - пакетное выполнение операции `upsert`.
 
 Формат запроса:
@@ -247,7 +248,7 @@ result, err = vshard.delete("accounts", "00012345678")
 {"00012345678", "saving", "1000"}
 ]]--
 ```
-
+---
 `vshard.batch_delete` - удаление кортежей из спейса условию.
 
 Формат запроса:
