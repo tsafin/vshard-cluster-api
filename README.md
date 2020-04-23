@@ -335,7 +335,7 @@ result, err = vshard.register("local user = ...\n return 'Hello ' .. user")
 
 Формат запроса:
 ```lua
-result, err = vshard.call(func, params, ) 
+result, err = vshard.call(func, params, space, key) 
 ```
 
 * `func` - hash код зарегистрированной функции (см. [vshard.register](#register-function)) или lua скрипт для выполнения.
