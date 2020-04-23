@@ -2,7 +2,9 @@
 
 ## CRUD operations
 ### Select
-`vshard.select` - поиск данных в спейсе по набору условий. 
+`vshard.select` - поиск данных в спейсе по набору условий. Если среди условий фильтрации есть сравнение поля 
+шардирования с его полным значением, то запрос будет выполнен на узле, хранящем бакет этого ключа. Иначе запрос 
+будет выполнен на всех узлах кластера, и для формирования результата неявно выполнен map-reduce результатов.
 
 Формат запроса:
 ```lua
@@ -51,7 +53,7 @@ result, err = vshard.get("accounts", '99912345678')
 {"99912345678", "saving", {"1000", "840"}}
 ]]--
 ```
-
+---
 ### Insert
 `vshard.insert` - сохранение кортежа в спейсе.
 
@@ -135,7 +137,7 @@ result, err = vshard.put_all(accounts,
     {{"99912345678", "saving", "50000"},{"99912345678", "saving", {"50000", "643"}}},
     {batch_size = 20})
 ```
-
+---
 ### Update
 `vshard.update` - обновление кортежа в спейсе
 
@@ -182,7 +184,7 @@ result, err = vshard.batch_update("accounts",
     {{account_id = "99912345678", add_amount = 20000},{account_id = "00012345678", add_amount = 1000}}, -- params
     {batch_size = 20}) -- opts
 ```
-
+---
 ### Upsert
 `vshard.upsert` - вставка нового или обновление существующего кортежа в спейсе.
 
@@ -227,7 +229,7 @@ result, err = vshard.batch_upsert("accounts",
     {{{'+', 'amount', '5000'}}, {{'-', 'amount', '5000'}}}, -- params
     {batch_size = 20}) -- opts
 ```
-
+---
 ### Delete
 `vshard.delete` - удаление кортежа из спейса по первичному ключу.
 
@@ -276,7 +278,7 @@ result, err = vshard.batch_delete("accounts",
 {"99912345678", "saving", {"50000", "643"}}}
 ]]--
 ```
-
+---
 ## Joins
 `vshard.join` - join запрос к двум или более спейсам.
 
@@ -306,7 +308,7 @@ result, err = vshard.join({"accounts", "cards"}, -- spaces
 [("00012345678", "saving", "1000", "1111222233334444", "1122", "active")]
 ]]--
 ```
-
+---
 ## Functions
 ### Register function
 `vshard.register` - регистрация пользовательской функции. 
@@ -327,7 +329,7 @@ result, err = vshard.register("local user = ...\n return 'Hello ' .. user")
 86c0f50124ea8abaf6624794b74c5654587a8f72
 """
 ```
-
+---
 ### Call function
 `vshard.call` - вызов зарегистрированной функции. 
 
@@ -354,12 +356,27 @@ result, err = vshard.call("local user = ...\n return 'Hello ' .. user", {"world"
 result, err = vshard.call("86c0f50124ea8abaf6624794b74c5654587a8f72", {"world"}, 
     "accounts", "99912345678")
 ```
-
+---
 # TDB
-The next list of api functions is still under discussion.
+Далее перечислены методы API, которые еще находятся на стадии обсуждения.
 
 ## Map/Reduce
-`vshard.map_reduce` - map/reduce operation on data from `space`
+`vshard.map_reduce` - выполнение map/reduce над данными из спейса
+
+Формат запроса:
+```lua
+result, err = vshard.call(func, params, ) 
+```
+
+* `func` - hash код зарегистрированной функции (см. [vshard.register](#register-function)) или lua скрипт для выполнения.
+* `params` - массив значений аргументов функции
+* `space` - спейс для определения ключа шардирования
+* `key` - ключ кортежа. Если задан вместе со `space`, функция будет выполнена только на узле, где хранится кортеж с данным ключом.
+* `params` - массив значений аргументов функции
+* `result` - hash код зарегистрированной функции. Должен быть использован для вызова функции.
+* `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
+  
+Пример:
 ```lua
 # map_func - <hash code of registered function or plain text
 # reduce_func - <hash code of registered function or plain text
