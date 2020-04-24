@@ -475,7 +475,7 @@ local result, err = vshard.queue_put(name, message, partition, opts)
   
 Пример:
 ```lua
-data, err = vshard.queue_put("system messages", 
+local result, err = vshard.queue_put("system messages", 
     {"some", "data"}, -- message
     1) -- идентификатор партиции
 ```
@@ -497,7 +497,7 @@ local result, err = vshard.queue_take(name, partition, opts)
   
 Пример:
 ```lua
-data, err = vshard.queue_take("system messages", 1)
+local result, err = vshard.queue_take("system messages", 1)
 ```
 ---
 `vshard.queue_peek` - чтение сообщения из очереди. Само сообщение при этом из очереди не удаляется. 
@@ -522,7 +522,7 @@ local result, err = vshard.queue_peek(name, partition, opts)
   
 Пример:
 ```lua
-data, err = vshard.queue_peek("system messages", 1, { lock = true })
+local result, err = vshard.queue_peek("system messages", 1, { lock = true })
 ```
 ---
 `vshard.queue_remove` - удаление заблокированного сообщения из очереди. 
@@ -542,7 +542,7 @@ local result, err = vshard.queue_remove(name, lock_key, partition, opts)
   
 Пример:
 ```lua
-data, err = vshard.queue_remove("system messages", "93a1f8f0-4bba-4394-b678-bc609172e79f")
+local result, err = vshard.queue_remove("system messages", "93a1f8f0-4bba-4394-b678-bc609172e79f")
 ```
 --- 
 `vshard.queue_delete` - удаление существующей очереди или ее партиции. 
@@ -585,7 +585,7 @@ local result, err = vshard.channel_create(channel, opts)
   
 Пример:
 ```lua
-err = vshard.channel_create("user messages")
+local result, err = vshard.channel_create("user messages")
 ```
 ---
 `vshard.channel_publish` - create channel for message exchange.
@@ -645,6 +645,91 @@ local result, err = vshard.unsubscribe(channel)
 ```lua
 -- unsubscribe from a channel
 local result, err = vshard.unsubscribe(channel_name)
+```
+---
+## Cache
+Функционал динамического создания key-value кешей. 
+
+`vshard.cache_put` - запись значения в кеш. Если кеш не существует, он будет создан автоматически.
+
+Формат запроса:
+```lua
+local result, err = vshard.cache_put(cache, key, value, opts) 
+```
+
+* `cache` - имя кеша
+* `key` - ключ в кеше. Если значение с таким ключом в кеше есть, то значение будет перезаписано.
+* `value` - значение
+* `opts` - дополнительные опции запроса:
+  * `timeout` - время ожидания записи (по-умолчанию 10000 мс).
+  * `ttl` - время жизни записи в кеше (в мс, по-умолчанию не ограничено). 
+  Если задано, то по истечению времени сообщение не может быть прочитано из очереди и будет удалено.
+* `result` - nil
+* `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
+  
+Пример:
+```lua
+local result, err = vshard.cache_put("counters", "customer_1", { name = "John", amount = 20 })
+```
+---
+`vshard.cache_get` - чтение значения из кеша по ключу. 
+
+Формат запроса:
+```lua
+local result, err = vshard.cache_get(cache, key, opts) 
+```
+
+* `cache` - имя кеша
+* `key` - ключ в кеше. 
+* `opts` - дополнительные опции запроса:
+  * `timeout` - время ожидания чтения (по-умолчанию 10000 мс).
+  Если задано, то по истечению времени сообщение не может быть прочитано из очереди и будет удалено.
+* `result` - значение, соответствующее ключу `key`, или `nil`, если в кеше ключ не был найден.
+* `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
+  
+Пример:
+```lua
+data, err = vshard.cache_get("counters", "customer_1") 
+```
+---
+`vshard.cache_find` - чтение по ключу части значения по JSONPath. 
+
+Формат запроса:
+```lua
+local result, err = vshard.cache_find(cache, key, opts) 
+```
+
+* `cache` - имя кеша
+* `key` - ключ в кеше. 
+* `path` - JSONPath для поиска значения (по-умолчанию `$[*]`). 
+* `opts` - дополнительные опции запроса:
+  * `timeout` - время ожидания чтения (по-умолчанию 10000 мс).
+  Если задано, то по истечению времени сообщение не может быть прочитано из очереди и будет удалено.
+* `result` - значение, соответствующее ключу `key`, или `nil`, если в кеше ключ не был найден.
+* `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
+  
+Пример:
+```lua
+local result, err = vshard.cache_find("counters", "customer_1", "$[*].name")
+--[[ sample result
+{ "John" }
+]]--
+```
+---
+`vshard.cache_invalidate` - удаление всех данных из кеша. 
+
+Формат запроса:
+```lua
+local result, err = vshard.cache_invalidate(cache) 
+```
+
+* `cache` - имя кеша
+* `result` - `nil`.
+* `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
+  
+Пример:
+```lua
+local result, err = vshard.cache_invalidate("counters")
 ```
 ---
 ## Transactions
