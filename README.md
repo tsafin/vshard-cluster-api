@@ -438,7 +438,7 @@ data, err = vshard.cache_get("counters", "customer_1")
 
 Формат запроса:
 ```lua
-local result, err = vshard.cache_find(cache, key, opts) 
+local result, err = vshard.cache_find(cache, key, path, opts) 
 ```
 
 * `cache` - имя кеша
