@@ -8,7 +8,7 @@
 
 Формат запроса:
 ```lua
-result, err = vshard.select(space, conditions, opts) 
+local result, err = vshard.select(space, conditions, opts) 
 ```
 
 * `space` - имя спейса
@@ -22,13 +22,13 @@ result, err = vshard.select(space, conditions, opts)
   
 Пример:
 ```lua
-result, err = vshard.select("accounts", {{'=', 'acc_type', 'saving'}, {'>', 'amount', 0}}, {limit = 2}) 
+local result, err = vshard.select("accounts", {{'=', 'acc_type', 'saving'}, {'>', 'amount', 0}}, {limit = 2}) 
 --[[ sample response
 {{"00012345678", "saving", {"1000", "840"}},
 {"99912345678", "saving", {"50000", "643"}}}
 ]]--
 -- select data for the next page
-result, err = vshard.select("accounts", {{'=', 'acc_type', 'saving'}, {'>', 'amount', 0}}, 
+local result, err = vshard.select("accounts", {{'=', 'acc_type', 'saving'}, {'>', 'amount', 0}}, 
     {limit = 2, after = result[1]}) 
 --[[ sample response
 {{"4678213812", "checking", {"2000", "840"}}}
@@ -39,7 +39,7 @@ result, err = vshard.select("accounts", {{'=', 'acc_type', 'saving'}, {'>', 'amo
 
 Формат запроса:
 ```lua
-result, err = vshard.get(space, key, opts) 
+local result, err = vshard.get(space, key, opts) 
 ```
 
 * `space` - имя спейса
@@ -51,7 +51,7 @@ result, err = vshard.get(space, key, opts)
   
 Пример:
 ```lua
-result, err = vshard.get("accounts", '99912345678')
+local result, err = vshard.get("accounts", '99912345678')
 --[[ sample response
 {"99912345678", "saving", {"1000", "840"}}
 ]]--
@@ -62,7 +62,7 @@ result, err = vshard.get("accounts", '99912345678')
 
 Формат запроса:
 ```lua
-result, err = vshard.insert(space, tuple) 
+local result, err = vshard.insert(space, tuple) 
 ```
 
 * `space` - имя спейса
@@ -72,7 +72,7 @@ result, err = vshard.insert(space, tuple)
   
 Пример:
 ```lua
-result, err = vshard.insert("accounts", {"99912345678", "saving", "50000"})
+local result, err = vshard.insert("accounts", {"99912345678", "saving", "50000"})
 --[[ sample response
 {"99912345678", "saving", "50000"}
 ]]--
@@ -82,7 +82,7 @@ result, err = vshard.insert("accounts", {"99912345678", "saving", "50000"})
 
 Формат запроса:
 ```lua
-result, err = vshard.batch_insert(space, tuples, opts) 
+local result, err = vshard.batch_insert(space, tuples, opts) 
 ```
 
 * `space` - имя спейса
@@ -95,7 +95,7 @@ result, err = vshard.batch_insert(space, tuples, opts)
   
 Пример:
 ```lua
-result, err = vshard.batch_insert("accounts",
+local result, err = vshard.batch_insert("accounts",
     {{"99912345678", "saving", "50000"},{"99912345678", "saving", {"50000", "643"}}})
 ```
 ---
@@ -104,7 +104,7 @@ result, err = vshard.batch_insert("accounts",
 
 Формат запроса:
 ```lua
-result, err = vshard.put(space, tuples) 
+local result, err = vshard.put(space, tuples) 
 ```
 
 * `space` - имя спейса
@@ -114,7 +114,7 @@ result, err = vshard.put(space, tuples)
   
 Пример:
 ```lua
-result, err = vshard.put("accounts", {"00012345678", "saving", "1000"})
+local result, err = vshard.put("accounts", {"00012345678", "saving", "1000"})
 --[[ sample response
 {"00012345678", "saving", "1000"}
 ]]--
@@ -124,7 +124,7 @@ result, err = vshard.put("accounts", {"00012345678", "saving", "1000"})
 
 Формат запроса:
 ```lua
-result, err = vshard.batch_put(space, tuples, opts) 
+local result, err = vshard.batch_put(space, tuples, opts) 
 ```
 
 * `space` - имя спейса
@@ -137,7 +137,7 @@ result, err = vshard.batch_put(space, tuples, opts)
   
 Пример:
 ```lua
-result, err = vshard.batch_put(accounts,
+local result, err = vshard.batch_put(accounts,
     {{"99912345678", "saving", "50000"},{"99912345678", "saving", {"50000", "643"}}})
 ```
 ---
@@ -146,7 +146,7 @@ result, err = vshard.batch_put(accounts,
 
 Формат запроса:
 ```lua
-result, err = vshard.update(space, key, operations) 
+local result, err = vshard.update(space, key, operations) 
 ```
 
 * `space` - имя спейса
@@ -157,7 +157,7 @@ result, err = vshard.update(space, key, operations)
   
 Пример:
 ```lua
-result, err = vshard.update("accounts", "99912345678", {{'+', 'amount', '20000'}})
+local result, err = vshard.update("accounts", "99912345678", {{'+', 'amount', '20000'}})
 --[[ sample response
 {"99912345678", "saving", "70000"}
 ]]--
@@ -167,7 +167,7 @@ result, err = vshard.update("accounts", "99912345678", {{'+', 'amount', '20000'}
 
 Формат запроса:
 ```lua
-result, err = vshard.batch_update(space, conditions, operations, params, opts) 
+local result, err = vshard.batch_update(space, conditions, operations, params, opts) 
 ```
 
 * `space` - имя спейса
@@ -182,7 +182,7 @@ result, err = vshard.batch_update(space, conditions, operations, params, opts)
   
 Пример:
 ```lua
-result, err = vshard.batch_update("accounts",
+local result, err = vshard.batch_update("accounts",
     {{'=', 'acc_id', ':account_id'}}, -- conditions
     {{'+', 'amount', ':add_amount'}}, -- operations
     {{account_id = "99912345678", add_amount = 20000},{account_id = "00012345678", add_amount = 1000}}) -- params
@@ -193,7 +193,7 @@ result, err = vshard.batch_update("accounts",
 
 Формат запроса:
 ```lua
-result, err = vshard.upsert(space, tuple, operations) 
+local result, err = vshard.upsert(space, tuple, operations) 
 ```
 
 * `space` - имя спейса
@@ -204,7 +204,7 @@ result, err = vshard.upsert(space, tuple, operations)
   
 Пример:
 ```lua
-result, err = vshard.upsert("accounts",
+local result, err = vshard.upsert("accounts",
     {"99912345678", "saving", "50000"},
     {{'=', 'amount', '20000'}, {'=', 'acc_type', 'new'}})
 ```
@@ -213,7 +213,7 @@ result, err = vshard.upsert("accounts",
 
 Формат запроса:
 ```lua
-result, err = vshard.batch_upsert(space, tuples, operations, params, opts) 
+local result, err = vshard.batch_upsert(space, tuples, operations, params, opts) 
 ```
 
 * `space` - имя спейса
@@ -228,7 +228,7 @@ result, err = vshard.batch_upsert(space, tuples, operations, params, opts)
   
 Пример:
 ```lua
-result, err = vshard.batch_upsert("accounts",
+local result, err = vshard.batch_upsert("accounts",
     {{"99912345678", "saving", "50000"},{"00012345678", "saving", {"50000", "643"}}}, -- tuples
     {{{'+', 'amount', '5000'}}, {{'-', 'amount', '5000'}}}) -- params
 ```
@@ -238,7 +238,7 @@ result, err = vshard.batch_upsert("accounts",
 
 Формат запроса:
 ```lua
-result, err = vshard.delete(space, key) 
+local result, err = vshard.delete(space, key) 
 ```
 
 * `space` - имя спейса
@@ -248,7 +248,7 @@ result, err = vshard.delete(space, key)
   
 Пример:
 ```lua
-result, err = vshard.delete("accounts", "00012345678")
+local result, err = vshard.delete("accounts", "00012345678")
 --[[ sample response
 {"00012345678", "saving", "1000"}
 ]]--
@@ -258,7 +258,7 @@ result, err = vshard.delete("accounts", "00012345678")
 
 Формат запроса:
 ```lua
-result, err = vshard.batch_delete(space, conditions, params, opts) 
+local result, err = vshard.batch_delete(space, conditions, params, opts) 
 ```
 
 * `space` - имя спейса
@@ -272,7 +272,7 @@ result, err = vshard.batch_delete(space, conditions, params, opts)
   
 Пример:
 ```lua
-result, err = vshard.batch_delete("accounts", 
+local result, err = vshard.batch_delete("accounts", 
     {{'=', 'acc_type', 'saving'}}) -- conditions
 --[[ sample response
 {{"00012345678", "saving", {"1000", "840"}},
@@ -285,7 +285,7 @@ result, err = vshard.batch_delete("accounts",
 
 Формат запроса:
 ```lua
-result, err = vshard.join(spaces, on, conditions, fields, params, opts) 
+local result, err = vshard.join(spaces, on, conditions, fields, params, opts) 
 ```
 
 * `spaces` - список спейсов запроса
@@ -301,7 +301,7 @@ result, err = vshard.join(spaces, on, conditions, fields, params, opts)
   
 Пример:
 ```lua
-result, err = vshard.join({"accounts", "cards"}, -- spaces
+local result, err = vshard.join({"accounts", "cards"}, -- spaces
     {{'accounts.acc_id', 'cards.account_id'}}, -- on
     {{'>', 'accounts.amount', 0}, {'=', 'accounts.account_type', 'saving'}}, -- consitions
     {'accounts.acc_id', 'accounts.acc_type', 'accounts.amount', -- fields
@@ -317,7 +317,7 @@ result, err = vshard.join({"accounts", "cards"}, -- spaces
 
 Формат запроса:
 ```lua
-result, err = vshard.register(func) 
+local result, err = vshard.register(func) 
 ```
 
 * `func` - lua скрипт для регистрации в кластере
@@ -326,7 +326,7 @@ result, err = vshard.register(func)
   
 Пример:
 ```lua
-result, err = vshard.register("local user = ...\n return 'Hello ' .. user")
+local result, err = vshard.register("local user = ...\n return 'Hello ' .. user")
 """
 86c0f50124ea8abaf6624794b74c5654587a8f72
 """
@@ -337,7 +337,7 @@ result, err = vshard.register("local user = ...\n return 'Hello ' .. user")
 
 Формат запроса:
 ```lua
-result, err = vshard.call(func, params, space, key) 
+local result, err = vshard.call(func, params, space, key) 
 ```
 
 * `func` - hash код зарегистрированной функции (см. [vshard.register](#register-function)).
@@ -351,9 +351,9 @@ result, err = vshard.call(func, params, space, key)
 Пример:
 ```lua
 -- call on all nodes registered function
-result, err = vshard.call("86c0f50124ea8abaf6624794b74c5654587a8f72", {"world"})
+local result, err = vshard.call("86c0f50124ea8abaf6624794b74c5654587a8f72", {"world"})
 -- call by sharding key
-result, err = vshard.call("86c0f50124ea8abaf6624794b74c5654587a8f72", {"world"}, 
+local result, err = vshard.call("86c0f50124ea8abaf6624794b74c5654587a8f72", {"world"}, 
     "accounts", "99912345678")
 ```
 ---
@@ -362,7 +362,7 @@ result, err = vshard.call("86c0f50124ea8abaf6624794b74c5654587a8f72", {"world"},
 
 Формат запроса:
 ```lua
-result, err = vshard.eval(func, params, space, key) 
+local result, err = vshard.eval(func, params, space, key) 
 ```
 
 * `func` - lua скрипт для выполнения.
@@ -376,9 +376,9 @@ result, err = vshard.eval(func, params, space, key)
 Пример:
 ```lua
 -- call on all nodes plain script
-result, err = vshard.eval("local user = ...\n return 'Hello ' .. user", {"world"})
+local result, err = vshard.eval("local user = ...\n return 'Hello ' .. user", {"world"})
 -- call by sharding key
-result, err = vshard.eval("local user = ...\n return 'Hello ' .. user", {"world"}, 
+local result, err = vshard.eval("local user = ...\n return 'Hello ' .. user", {"world"}, 
     "accounts", "99912345678")
 ```
 ---
@@ -390,7 +390,7 @@ result, err = vshard.eval("local user = ...\n return 'Hello ' .. user", {"world"
 
 Формат запроса:
 ```lua
-result, err = vshard.map_reduce(space, conditions, params, opts) 
+local result, err = vshard.map_reduce(space, conditions, params, opts) 
 ```
 
 * `space` - имя спейса
@@ -413,7 +413,7 @@ result, err = vshard.map_reduce(space, conditions, params, opts)
 ```lua
 -- map_func_hash - hash code of registered function 
 -- reduce_func_hash - hash code of registered function 
-result, err = vshard.map_reduce("accounts",
+local result, err = vshard.map_reduce("accounts",
     {{'=', 'acc_type', '?'}}, -- conditions
     {'cash'}, -- params
     { -- opts
@@ -428,7 +428,7 @@ result, err = vshard.map_reduce("accounts",
 
 Формат запроса:
 ```lua
-result, err = vshard.queue_create(name, opts) 
+local result, err = vshard.queue_create(name, opts) 
 ```
 
 * `name` - имя очереди
@@ -445,14 +445,14 @@ result, err = vshard.queue_create(name, opts)
 Пример:
 ```lua
 -- create new queue if not exists
-result, err = vshard.queue_create("system messages", { size = 100000, ttl = 100000})
+local result, err = vshard.queue_create("system messages", { size = 100000, ttl = 100000})
 ```
 ---
 `vshard.queue_put` - запись сообщения в очередь. 
 
 Формат запроса:
 ```lua
-result, err = vshard.queue_put(name, message, partition, opts) 
+local result, err = vshard.queue_put(name, message, partition, opts) 
 ```
 
 * `name` - имя очереди
@@ -476,7 +476,7 @@ data, err = vshard.queue_put("system messages",
 
 Формат запроса:
 ```lua
-result, err = vshard.queue_take(name, partition, opts) 
+local result, err = vshard.queue_take(name, partition, opts) 
 ```
 
 * `name` - имя очереди
@@ -496,7 +496,7 @@ data, err = vshard.queue_take("system messages", 1)
 
 Формат запроса:
 ```lua
-result, err = vshard.queue_peek(name, partition, opts) 
+local result, err = vshard.queue_peek(name, partition, opts) 
 ```
 
 * `name` - имя очереди
@@ -521,7 +521,7 @@ data, err = vshard.queue_peek("system messages", 1, { lock = true })
 
 Формат запроса:
 ```lua
-result, err = vshard.queue_remove(name, lock_key, partition, opts) 
+local result, err = vshard.queue_remove(name, lock_key, partition, opts) 
 ```
 
 * `name` - имя очереди
@@ -541,7 +541,7 @@ data, err = vshard.queue_remove("system messages", "93a1f8f0-4bba-4394-b678-bc60
 
 Формат запроса:
 ```lua
-result, err = vshard.queue_delete(name, partition, opts) 
+local result, err = vshard.queue_delete(name, partition, opts) 
 ```
 
 * `name` - имя очереди
@@ -551,46 +551,99 @@ result, err = vshard.queue_delete(name, partition, opts)
 * `result` - `nil`
 * `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
   
+Пример:
 ```lua
 err = vshard.queue_delete("system messages")
 ```
-
+---
 ### Pub/Sub
-`vshard.channel` - message exchange between publishers and subscribers
+Message exchange between publishers and subscribers.
+
+`vshard.channel_create` - create channel for message exchange.
+
+Формат запроса:
 ```lua
-# create new channel
-channel_name = "user messages"
-err = vshard.channel_create(
-    channel=channel_name
-    opts = {
-        "read_timeout": "10000", # default parameters
-        "write_timeout": "10000",
-        "size": "100000",
-        "ttl": "100000"})
-
-# publish message to an existing channel
-vshard.channel_publish(channel_name, "some message")
-
-def handler(messages):
-    # each message is a tuple (message_body, message_offset)
-    for m in messages: print(m)
-
-# subscribe to a channel, specify handler for incoming messages
-# filter - optional attribute to specify subscriber's message filter
-# offset - message offset from which subscriber wants to consume 
-err = vshard.subscribe(channel_name, handler, 
-    opts = {"offset": message_offset,
-            "filter": ('=', 'acc_type', 'saving')})
-
-# unsubscribe from a channel
-err = vshard.unsubscribe(channel_name)
+local result, err = vshard.channel_create(channel, opts) 
 ```
 
+* `channel` - имя канала
+* `opts` - дополнительные опции запроса:
+  * `read_timeout` - время ожидания чтения из канала (по-умолчанию 10000 мс).
+  * `write_timeout` - время ожидания записи в канал (по-умолчанию 10000 мс).
+  * `size` - максимальный размер канала (по-умолчанию не ограничен). 
+  * `ttl` - время жизни сообещния в канале (в мс, по-умолчанию не ограничено). 
+* `result` - `nil`
+* `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
+  
+Пример:
+```lua
+err = vshard.channel_create("user messages")
+```
+---
+`vshard.channel_publish` - create channel for message exchange.
+
+Формат запроса:
+```lua
+local result, err = vshard.channel_publish(channel, message) 
+```
+
+* `channel` - имя канала
+* `message` - сообщения для передачи через канал 
+* `result` - `nil`
+* `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
+  
+Пример:
+```lua
+vshard.channel_publish("user messages", "some message")
+```
+---
+`vshard.channel_subscribe` - подписка на сообщение из канала.
+
+Формат запроса:
+```lua
+local result, err = vshard.channel_subscribe(channel, handler, opts) 
+```
+
+* `channel` - имя канала
+* `handler` - функция обработки сообщений из канала
+* `opts` - дополнительные опции запроса:
+  * `offset` - номер смещения, после которого надо прочитать следующее сообщение из канала.
+  * `filter` - фильтр входящих сообщений.
+* `result` - кортеж в формате `{message_body, message_offset}`, где `message_body` - тело сообщения, 
+`message_offset` - смещение текущего сообщения в канале.
+* `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
+  
+Пример:
+```lua
+local function handler(message) 
+    -- process message  
+end
+local result, err = vshard.subscribe("user messages", handler, 
+    { filter = {'=', 'acc_type', 'saving'}}) --opts
+```
+---
+`vshard.unsubscribe` - отмена подписки на канал.
+
+Формат запроса:
+```lua
+local result, err = vshard.unsubscribe(channel) 
+```
+
+* `channel` - имя канала
+* `result` - `nil`
+* `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
+  
+Пример:
+```lua
+-- unsubscribe from a channel
+local result, err = vshard.unsubscribe(channel_name)
+```
+---
 ## Transactions
 ### Deadlock-free transaction
 ```lua
 # update with optimistic lock. field from cas_cond should be inc on succesfull update atomically.
-result, err = vshard.update(
+local result, err = vshard.update(
     space="accounts"
     conditions=[('=', 'acc_id', '99912345678')],
     operations=[('+', 'amount', '20000')],
@@ -601,24 +654,24 @@ result, err = vshard.update(
 ```lua
 tx_id = vshard.tx_begin()
 # specify transaction id in parameter `tx_id` for interactive transaction
-result, err = vshard.get(space="accounts", key='99912345678', tx_id=tx_id)
+local result, err = vshard.get(space="accounts", key='99912345678', tx_id=tx_id)
 if not result then:
-    result, err = vshard.insert(space="accounts", 
+    local result, err = vshard.insert(space="accounts", 
         tuple=("99912345678", "saving", "50000"),
         tx_id=tx_id)
-result, err = vshard.update(
+local result, err = vshard.update(
     space="accounts"
     operations=[('+', 'amount', '20000')],
     conditions=[('=', 'acc_status', 'active')],
     tx_id=tx_id)
 # commit transaction 
-result, err = vshard.tx_commit(tx_id)
+local result, err = vshard.tx_commit(tx_id)
 ```
 
 ## Explain plan
 `explain` option - returns query execution plan.
 ```lua
-result, err = vshard.select(
+local result, err = vshard.select(
     space="accounts",
     conditions=[('=', 'acc_id', '99912345678')],
     opts = {"explain": true}) # explain plan of query execution
