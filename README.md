@@ -17,6 +17,8 @@ local result, err = vshard.select(space, conditions, opts)
   * `limit` - максимальное число кортежей в результате 
   * `after` - кортеж, после которого должны быть выбраны следующие за ним кортежи.
   * `balance` - boolean флаг, задающий разрешение на чтение с реплик (по-умолчанию, true).
+  * `explain` - boolean флаг. Если задан в true, то вместо результата запроса будет возвращен план запроса
+   (по-умолчанию, false).
 * `result` - массив кортежей, удовлетворяющие условиям запроса
 * `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
   
@@ -146,12 +148,14 @@ local result, err = vshard.batch_put(accounts,
 
 Формат запроса:
 ```lua
-local result, err = vshard.update(space, key, operations) 
+local result, err = vshard.update(space, key, operations, opts) 
 ```
 
 * `space` - имя спейса
 * `key` - значение индексного ключа кортежа
 * `operations` - массив операций изменения данных в кортеже
+* `opts` - дополнительные опции запроса:
+  * `cas_cond` - операция проверки при оптимистичной блокировке
 * `result` - кортеж, обновленный в спейсе
 * `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
   
@@ -193,12 +197,14 @@ local result, err = vshard.batch_update("accounts",
 
 Формат запроса:
 ```lua
-local result, err = vshard.upsert(space, tuple, operations) 
+local result, err = vshard.upsert(space, tuple, operations, opts) 
 ```
 
 * `space` - имя спейса
 * `tuple` - кортед с данными
 * `operations` - массив операций изменения данных в кортеже
+* `opts` - дополнительные опции запроса:
+  * `cas_cond` - операция проверки при оптимистичной блокировке
 * `result` - `nil`
 * `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
   
@@ -296,6 +302,8 @@ local result, err = vshard.join(spaces, on, conditions, fields, params, opts)
 * `opts` - дополнительные опции запроса:
   * `limit` - максимальное число кортежей в результате 
   * `balance` - boolean флаг, задающий разрешение на чтение с реплик (по-умолчанию, true).
+  * `explain` - boolean флаг. Если задан в true, то вместо результата запроса будет возвращен план запроса 
+  (по-умолчанию, false).
 * `result` - массив найденных кортежей
 * `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
   
@@ -641,41 +649,65 @@ local result, err = vshard.unsubscribe(channel_name)
 ---
 ## Transactions
 ### Deadlock-free transaction
+Обновление данных при помощи оптимистичных блокировок. В качестве поля для сравнения изменений в операции из `cas_cond`
+должно быть поле целочисленного типа, которое будет увеличено на 1, если проверка `cas_cond` выполнима на момент 
+применения изменений.
+  
+Пример:
 ```lua
-# update with optimistic lock. field from cas_cond should be inc on succesfull update atomically.
-local result, err = vshard.update(
-    space="accounts"
-    conditions=[('=', 'acc_id', '99912345678')],
-    operations=[('+', 'amount', '20000')],
-    opts = {"cas_cond": ('=', 'version', '1')}) # [optimistic lock condition]
+local result, err = vshard.update("accounts",
+    {{'=', 'acc_id', '99912345678'}}, --conditions
+    {{'+', 'amount', '20000'}}, -- operations
+    { cas_cond = {'=', 'version', '1'}}) -- opts
 ```
-
+---
 ### Distributed transaction
+`vshard.tx_begin` - создание контекста транзакции.
+Формат запроса:
 ```lua
-tx_id = vshard.tx_begin()
-# specify transaction id in parameter `tx_id` for interactive transaction
-local result, err = vshard.get(space="accounts", key='99912345678', tx_id=tx_id)
-if not result then:
-    local result, err = vshard.insert(space="accounts", 
-        tuple=("99912345678", "saving", "50000"),
-        tx_id=tx_id)
-local result, err = vshard.update(
-    space="accounts"
-    operations=[('+', 'amount', '20000')],
-    conditions=[('=', 'acc_status', 'active')],
-    tx_id=tx_id)
-# commit transaction 
-local result, err = vshard.tx_commit(tx_id)
+local result, err = vshard.tx_begin() 
 ```
 
-## Explain plan
-`explain` option - returns query execution plan.
+* `result` - идекнтификатор транзакции
+* `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
+
+---
+`vshard.tx_commit` - создание контекста транзакции.
+Формат запроса:
 ```lua
-local result, err = vshard.select(
-    space="accounts",
-    conditions=[('=', 'acc_id', '99912345678')],
-    opts = {"explain": true}) # explain plan of query execution
-"""
-# json-like tree with query plan
-"""
+local result, err = vshard.tx_commit(transaction_id) 
+```
+
+* `transaction_id` - идентификатор транзакции, к которой применяется commit. Все изменения этой транзакции
+будут применены на всех участвующих в транзакции узлах.
+* `result` - `nil`
+* `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
+
+Пример:
+```lua
+local tx_id = vshard.tx_begin()
+-- specify transaction id in parameter `tx_id` for interactive transaction
+local result, err = vshard.get("accounts", '99912345678', tx_id)
+if result ~= nil then
+    local result, err = vshard.insert("accounts", {"99912345678", "saving", "50000"}, tx_id)
+end
+result, err = vshard.update("accounts",
+    {{'+', 'amount', '20000'}},
+    {{'=', 'acc_status', 'active'}},
+    tx_id)
+-- commit transaction 
+result, err = vshard.tx_commit(tx_id)
+```
+---
+## Explain plan
+Возврат плана выполнения запроса.
+
+Пример:
+```lua
+local result, err = vshard.select("accounts",
+    {{'=', 'acc_id', '99912345678'}},
+    {explain = true}) 
+--[[
+    json-like tree with query plan
+]]--
 ```
