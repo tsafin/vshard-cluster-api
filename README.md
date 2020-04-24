@@ -390,7 +390,7 @@ result, err = vshard.eval("local user = ...\n return 'Hello ' .. user", {"world"
 
 Формат запроса:
 ```lua
-result, err = vshard.call(space, conditions, opts) 
+result, err = vshard.map_reduce(space, conditions, params, opts) 
 ```
 
 * `space` - имя спейса
