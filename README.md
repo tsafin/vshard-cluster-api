@@ -517,13 +517,42 @@ result, err = vshard.queue_peek(name, partition, opts)
 data, err = vshard.queue_peek("system messages", 1, { lock = true })
 ```
 ---
+`vshard.queue_remove` - удаление заблокированного сообщения из очереди. 
 
+Формат запроса:
+```lua
+result, err = vshard.queue_remove(name, lock_key, partition, opts) 
 ```
-# remove - remove locked message
-data, err = vshard.queue_remove(queue_name, data.lock_key, timeout=5000)
 
-# delete - delete queue
-err = vshard.queue_delete(queue_name)
+* `name` - имя очереди
+* `lock_key` - ключ блокировки сообщения в очереди
+* `partition` - идентификатор партиции, по которому определяется узел, хранящий сообщение в очереди
+* `opts` - дополнительные опции запроса:
+  * `timeout` - время ожидания сообщения в очереди (по-умолчанию значение берется из опции `write_timeout` очереди).
+* `result` - `nil`
+* `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
+  
+Пример:
+```lua
+data, err = vshard.queue_remove("system messages", "93a1f8f0-4bba-4394-b678-bc609172e79f")
+```
+--- 
+`vshard.queue_delete` - удаление существующей очереди или ее партиции. 
+
+Формат запроса:
+```lua
+result, err = vshard.queue_delete(name, partition, opts) 
+```
+
+* `name` - имя очереди
+* `partition` - идентификатор партиции, по которому определяется узел для удаления данных из партиции
+* `opts` - дополнительные опции запроса:
+  * `force` - удаление непустой очереди (по-умолчанию `false`).
+* `result` - `nil`
+* `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
+  
+```lua
+err = vshard.queue_delete("system messages")
 ```
 
 ### Pub/Sub
