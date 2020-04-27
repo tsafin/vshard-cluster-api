@@ -33,7 +33,7 @@ local result, err = vshard.select("accounts", {{'=', 'acc_type', 'saving'}, {'>'
 local result, err = vshard.select("accounts", {{'=', 'acc_type', 'saving'}, {'>', 'amount', 0}}, 
     {limit = 2, after = result[1]}) 
 --[[ sample response
-{{"4678213812", "checking", {"2000", "840"}}}
+{{"4678213812", "saving", {"2000", "840"}}}
 ]]--
 ```
 ---
@@ -311,7 +311,7 @@ local result, err = vshard.join(spaces, on, conditions, fields, params, opts)
 ```lua
 local result, err = vshard.join({"accounts", "cards"}, -- spaces
     {{'accounts.acc_id', 'cards.account_id'}}, -- on
-    {{'>', 'accounts.amount', 0}, {'=', 'accounts.account_type', 'saving'}}, -- consitions
+    {{'>', 'accounts.amount', 0}, {'!=', 'accounts.account_type', 'saving'}}, -- consitions
     {'accounts.acc_id', 'accounts.acc_type', 'accounts.amount', -- fields
      'cards.cardnumber', 'cards.expire_date', 'cards.status'}) 
 --[[ sample response 
@@ -543,12 +543,13 @@ local result, err = vshard.queue_create("system messages", { size = 100000, ttl 
 
 Формат запроса:
 ```lua
-local result, err = vshard.queue_put(name, message, partition, opts) 
+local result, err = vshard.queue_put(name, message [, line, opts]) 
 ```
 
 * `name` - имя очереди
 * `message` - кортеж с данными для записи в очередь
-* `partition` - идентификатор партиции, по которому определяется узел для хранения сообщения в очереди
+* `line` - имя или идентификатор части очереди (партиции), по которому определяется узел для хранения сообщения в очереди. 
+Сообщения в рамках одного `line` строкого упорядочены в порядке fifo.
 * `opts` - дополнительные опции запроса:
   * `timeout` - время ожидания записи в очередь (по-умолчанию значение берется из опции `write_timeout` очереди).
   * `ttl` - время жизни сообещния в очереди. 
@@ -567,11 +568,11 @@ local result, err = vshard.queue_put("system messages",
 
 Формат запроса:
 ```lua
-local result, err = vshard.queue_take(name, partition, opts) 
+local result, err = vshard.queue_take(name [, line, opts]) 
 ```
 
 * `name` - имя очереди
-* `partition` - идентификатор партиции, по которому определяется узел для хранения сообщения в очереди
+* `line` - имя/идентификатор части очереди (партиции), по которому определяется узел для чтения сообщения из очереди. 
 * `opts` - дополнительные опции запроса:
   * `timeout` - время ожидания записи в очередь (по-умолчанию значение берется из опции `read_timeout` очереди).
   Если задано, то по истечению времени сообщение не может быть прочитано из очереди и будет удалено.
@@ -587,11 +588,11 @@ local result, err = vshard.queue_take("system messages", 1)
 
 Формат запроса:
 ```lua
-local result, err = vshard.queue_peek(name, partition, opts) 
+local result, err = vshard.queue_peek(name [, line, opts]) 
 ```
 
 * `name` - имя очереди
-* `partition` - идентификатор партиции, по которому определяется узел для хранения сообщения в очереди
+* `line` - имя/идентификатор части очереди (партиции), по которому определяется узел для чтения сообщения из очереди. 
 * `opts` - дополнительные опции запроса:
   * `timeout` - время ожидания сообщения в очереди (по-умолчанию значение берется из опции `read_timeout` очереди).
   * `lock` - boolean флаг, задает необходимость блокировки сообщения на чтение другими клиентами.
@@ -612,12 +613,12 @@ local result, err = vshard.queue_peek("system messages", 1, { lock = true })
 
 Формат запроса:
 ```lua
-local result, err = vshard.queue_remove(name, lock_key, partition, opts) 
+local result, err = vshard.queue_remove(name, lock_key [, line, opts]) 
 ```
 
 * `name` - имя очереди
 * `lock_key` - ключ блокировки сообщения в очереди
-* `partition` - идентификатор партиции, по которому определяется узел, хранящий сообщение в очереди
+* `line` - имя/идентификатор части очереди (партиции), по которому определяется узел для чтения сообщения из очереди. 
 * `opts` - дополнительные опции запроса:
   * `timeout` - время ожидания сообщения в очереди (по-умолчанию значение берется из опции `write_timeout` очереди).
 * `result` - `nil`
@@ -632,11 +633,11 @@ local result, err = vshard.queue_remove("system messages", "93a1f8f0-4bba-4394-b
 
 Формат запроса:
 ```lua
-local result, err = vshard.queue_delete(name, partition, opts) 
+local result, err = vshard.queue_delete(name [, line, opts]) 
 ```
 
 * `name` - имя очереди
-* `partition` - идентификатор партиции, по которому определяется узел для удаления данных из партиции
+* `line` - имя/идентификатор части очереди (партиции), по которому определяется узел для удаления сообщения из очереди. 
 * `opts` - дополнительные опции запроса:
   * `force` - удаление непустой очереди (по-умолчанию `false`).
 * `result` - `nil`
@@ -650,28 +651,8 @@ err = vshard.queue_delete("system messages")
 ### Pub/Sub
 Message exchange between publishers and subscribers.
 
-`vshard.channel_create` - create channel for message exchange.
-
-Формат запроса:
-```lua
-local result, err = vshard.channel_create(channel, opts) 
-```
-
-* `channel` - имя канала
-* `opts` - дополнительные опции запроса:
-  * `read_timeout` - время ожидания чтения из канала (по-умолчанию 10000 мс).
-  * `write_timeout` - время ожидания записи в канал (по-умолчанию 10000 мс).
-  * `size` - максимальный размер канала (по-умолчанию не ограничен). 
-  * `ttl` - время жизни сообещния в канале (в мс, по-умолчанию не ограничено). 
-* `result` - `nil`
-* `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
-  
-Пример:
-```lua
-local result, err = vshard.channel_create("user messages")
-```
 ---
-`vshard.channel_publish` - create channel for message exchange.
+`vshard.channel_publish` - запись сообщения в канал `channel`. Если канал не существует, он будет создан.
 
 Формат запроса:
 ```lua
@@ -680,6 +661,8 @@ local result, err = vshard.channel_publish(channel, message)
 
 * `channel` - имя канала
 * `message` - сообщения для передачи через канал 
+* `opts` - дополнительные опции запроса:
+  * `timeout` - время записи сообщения в канал (по-умолчанию 10000 мс). 
 * `result` - `nil`
 * `err` - код ошибки, если при выполнении запроса произошла исключительная ситуация
   
@@ -698,6 +681,7 @@ local result, err = vshard.channel_subscribe(channel, handler, opts)
 * `channel` - имя канала
 * `handler` - функция обработки сообщений из канала
 * `opts` - дополнительные опции запроса:
+  * `timeout` - время чтения сообщения из канала (по-умолчанию 10000 мс). 
   * `offset` - номер смещения, после которого надо прочитать следующее сообщение из канала.
   * `filter` - фильтр входящих сообщений.
 * `result` - кортеж в формате `{message_body, message_offset}`, где `message_body` - тело сообщения, 
