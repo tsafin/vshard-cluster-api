@@ -1,5 +1,6 @@
-## CRUD operations
-### Select
+# CRUD operations
+
+## Select
 `vshard.select` - поиск данных в спейсе по набору условий. Если среди условий фильтрации есть сравнение поля 
 шардирования с его полным значением, то запрос будет выполнен на узле, хранящем бакет этого ключа. Иначе запрос 
 будет выполнен на всех узлах кластера, и для формирования результата неявно выполнен map-reduce результатов.
@@ -56,8 +57,9 @@ local result, err = vshard.get("accounts", '99912345678')
 {"99912345678", "saving", {"1000", "840"}}
 ]]--
 ```
+
 ---
-### Insert
+## Insert
 `vshard.insert` - сохранение кортежа в спейсе.
 
 Формат запроса:
@@ -77,6 +79,7 @@ local result, err = vshard.insert("accounts", {"99912345678", "saving", "50000"}
 {"99912345678", "saving", "50000"}
 ]]--
 ```
+
 ---
 `vshard.batch_insert` - пакетное сохранение массива кортежей в спейсе.
 
@@ -98,8 +101,9 @@ local result, err = vshard.batch_insert(space, tuples, opts)
 local result, err = vshard.batch_insert("accounts",
     {{"99912345678", "saving", "50000"},{"99912345678", "saving", {"50000", "643"}}})
 ```
+
 ---
-### Put
+## Put
 `vshard.put` - вставка или замена существующего кортежа в спейсе.
 
 Формат запроса:
@@ -140,8 +144,9 @@ local result, err = vshard.batch_put(space, tuples, opts)
 local result, err = vshard.batch_put(accounts,
     {{"99912345678", "saving", "50000"},{"99912345678", "saving", {"50000", "643"}}})
 ```
+
 ---
-### Update
+## Update
 `vshard.update` - обновление кортежа в спейсе
 
 Формат запроса:
@@ -164,6 +169,7 @@ local result, err = vshard.update("accounts", "99912345678", {{'+', 'amount', '2
 {"99912345678", "saving", "70000"}
 ]]--
 ```
+
 ---
 `vshard.batch_update` - пакетное обновление кортежей в спейсе.
 
@@ -189,8 +195,9 @@ local result, err = vshard.batch_update("accounts",
     {{'+', 'amount', ':add_amount'}}, -- operations
     {{account_id = "99912345678", add_amount = 20000},{account_id = "00012345678", add_amount = 1000}}) -- params
 ```
+
 ---
-### Upsert
+## Upsert
 `vshard.upsert` - вставка нового или обновление существующего кортежа в спейсе.
 
 Формат запроса:
@@ -212,6 +219,7 @@ local result, err = vshard.upsert("accounts",
     {"99912345678", "saving", "50000"},
     {{'=', 'amount', '20000'}, {'=', 'acc_type', 'new'}})
 ```
+
 ---
 `vshard.batch_upsert` - пакетное выполнение операции `upsert`.
 
@@ -236,8 +244,9 @@ local result, err = vshard.batch_upsert("accounts",
     {{"99912345678", "saving", "50000"},{"00012345678", "saving", {"50000", "643"}}}, -- tuples
     {{{'+', 'amount', '5000'}}, {{'-', 'amount', '5000'}}}) -- params
 ```
+
 ---
-### Delete
+## Delete
 `vshard.delete` - удаление кортежа из спейса по первичному ключу.
 
 Формат запроса:
@@ -257,6 +266,7 @@ local result, err = vshard.delete("accounts", "00012345678")
 {"00012345678", "saving", "1000"}
 ]]--
 ```
+
 ---
 `vshard.batch_delete` - удаление кортежей из спейса условию.
 

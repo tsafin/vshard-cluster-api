@@ -1,4 +1,5 @@
-### Pub/Sub
+# Messaging: Pub/Sub
+
 Message exchange between publishers and subscribers.
 
 ---

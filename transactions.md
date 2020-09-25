@@ -1,5 +1,6 @@
-## Transactions
-### Deadlock-free transaction
+# Transactions
+
+## Deadlock-free transaction
 Обновление данных при помощи оптимистичных блокировок. В качестве поля для сравнения изменений в операции из `cas_cond`
 должно быть поле целочисленного типа, которое будет увеличено на 1, если проверка `cas_cond` выполнима на момент 
 применения изменений.
@@ -12,7 +13,8 @@ local result, err = vshard.update("accounts",
     { cas_cond = {'=', 'version', '1'}}) -- opts
 ```
 ---
-### Distributed transaction
+
+## Distributed transaction
 `vshard.tx_begin` - создание контекста транзакции.
 Формат запроса:
 ```lua

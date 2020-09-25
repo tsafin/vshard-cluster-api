@@ -1,5 +1,5 @@
-## Messaging
-### FIFO queue
+# Messaging: FIFO queue
+
 `vshard.queue_create` - Создание распределенной очереди с гарантией fifo на уровне партиций. 
 
 Формат запроса:

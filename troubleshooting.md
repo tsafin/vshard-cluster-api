@@ -1,3 +1,5 @@
+# Troubleshooting
+
 ## Explain plan
 Возврат плана выполнения запроса.
 
